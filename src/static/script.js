@@ -26,11 +26,9 @@ function setupTabNavigation() {
         button.addEventListener('click', () => {
             const targetTab = button.getAttribute('data-tab');
             
-            // Remove active class from all buttons and contents
             tabButtons.forEach(btn => btn.classList.remove('active'));
             tabContents.forEach(content => content.classList.remove('active'));
             
-            // Add active class to clicked button and corresponding content
             button.classList.add('active');
             document.getElementById(targetTab).classList.add('active');
         });
@@ -39,46 +37,42 @@ function setupTabNavigation() {
 
 // Event listeners
 function setupEventListeners() {
-    // Formulário de produto
     document.getElementById('form-produto').addEventListener('submit', handleProdutoSubmit);
-    
-    // Busca de produto
     document.getElementById('btn-buscar').addEventListener('click', buscarProduto);
     document.getElementById('busca-codigo').addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
             buscarProduto();
         }
     });
-    
-    // Formulário de contagem
     document.getElementById('form-contagem').addEventListener('submit', handleContagemSubmit);
-    
-    // Botões de relatório
     document.getElementById('btn-relatorio-pdf').addEventListener('click', gerarRelatorioPDF);
     document.getElementById('btn-relatorio-excel').addEventListener('click', gerarRelatorioExcel);
-    
-    // Atualizar resumo
     document.getElementById('btn-atualizar-resumo').addEventListener('click', loadResumo);
-    
-    // Importação de produtos
     document.getElementById('btn-baixar-template').addEventListener('click', baixarTemplate);
     document.getElementById('btn-importar-excel').addEventListener('click', importarProdutos);
     
-    // Modal
     setupModal();
 }
 
 // Modal
 function setupModal() {
     const modal = document.getElementById('modal');
-    const closeBtn = document.querySelector('.close');
-    
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-    
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
+    if (!modal) {
+        console.error('Elemento do modal com id="modal" não foi encontrado no HTML.');
+        return;
+    }
+
+    const closeBtn = modal.querySelector('.close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+    } else {
+        console.warn('Aviso: Botão de fechar com classe "close" não foi encontrado dentro do modal.');
+    }
+
+    window.addEventListener('click', (event) => {
+        if (event.target === modal) {
             modal.style.display = 'none';
         }
     });
@@ -88,6 +82,11 @@ function showModal(message, type = 'info') {
     const modal = document.getElementById('modal');
     const modalBody = document.getElementById('modal-body');
     
+    if (!modal || !modalBody) {
+        alert(message);
+        return;
+    }
+
     const icon = type === 'success' ? 'fa-check-circle' : 
                  type === 'error' ? 'fa-exclamation-circle' : 
                  'fa-info-circle';
@@ -104,6 +103,12 @@ function showModal(message, type = 'info') {
     `;
     
     modal.style.display = 'block';
+
+    if (type === 'success') {
+        setTimeout(() => {
+            modal.style.display = 'none';
+        }, 3000);
+    }
 }
 
 function showLoading() {
@@ -219,7 +224,8 @@ async function deletarProduto(id) {
 
 // Busca de produto
 async function buscarProduto() {
-    const codigo = document.getElementById('busca-codigo').value.trim();
+    const codigoInput = document.getElementById('busca-codigo');
+    const codigo = codigoInput.value.trim();
     
     if (!codigo) {
         showModal('Por favor, digite um código de produto.', 'error');
@@ -237,7 +243,6 @@ async function buscarProduto() {
         document.getElementById('produto-encontrado').style.display = 'block';
         document.getElementById('card-contagem').style.display = 'block';
         
-        // Limpar formulário de contagem
         document.getElementById('form-contagem').reset();
         document.getElementById('produto-codigo-hidden').value = produto.codigo;
         
@@ -267,8 +272,9 @@ async function handleContagemSubmit(e) {
         quantidade: parseInt(formData.get('quantidade'))
     };
     
+    // --- LINHA CORRIGIDA ---
     if (!contagem.lote || !contagem.validade_mes || !contagem.validade_ano || !contagem.quantidade) {
-        showModal('Por favor, preencha todos os campos.', 'error');
+        showModal('Por favor, preencha todos os campos da contagem.', 'error');
         return;
     }
     
@@ -280,7 +286,6 @@ async function handleContagemSubmit(e) {
         
         showModal(resultado.mensagem, 'success');
         
-        // Limpar apenas os campos de contagem, manter produto selecionado
         document.getElementById('lote').value = '';
         document.getElementById('validade-mes').value = '';
         document.getElementById('validade-ano').value = '';
@@ -386,7 +391,8 @@ async function gerarRelatorioPDF() {
         const response = await fetch(`${API_BASE}/relatorio/pdf`);
         
         if (!response.ok) {
-            throw new Error('Erro ao gerar relatório PDF');
+            const errorData = await response.json().catch(() => ({ erro: 'Erro desconhecido ao gerar PDF' }));
+            throw new Error(errorData.erro);
         }
         
         const blob = await response.blob();
@@ -413,7 +419,8 @@ async function gerarRelatorioExcel() {
         const response = await fetch(`${API_BASE}/relatorio/excel`);
         
         if (!response.ok) {
-            throw new Error('Erro ao gerar relatório Excel');
+            const errorData = await response.json().catch(() => ({ erro: 'Erro desconhecido ao gerar Excel' }));
+            throw new Error(errorData.erro);
         }
         
         const blob = await response.blob();
@@ -434,3 +441,11 @@ async function gerarRelatorioExcel() {
     }
 }
 
+// Funções de importação/exportação (template)
+function baixarTemplate() {
+    showModal('Funcionalidade ainda não implementada.', 'info');
+}
+
+function importarProdutos() {
+    showModal('Funcionalidade ainda não implementada.', 'info');
+}
