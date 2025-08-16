@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Contagem de Estoque</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1><i class="fas fa-boxes"></i> Sistema de Contagem de Estoque</h1>
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-tab="produtos">
+                    <i class="fas fa-box"></i> Produtos
+                </button>
+                <button class="tab-btn" data-tab="contagem">
+                    <i class="fas fa-clipboard-list"></i> Contagem
+                </button>
+                <button class="tab-btn" data-tab="relatorios">
+                    <i class="fas fa-chart-bar"></i> Relatórios
+                </button>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            <!-- Aba Produtos -->
+            <section id="produtos" class="tab-content active">
+                <div class="section-header">
+                    <h2>Gerenciar Produtos</h2>
+                    <button class="btn btn-primary" id="btn-novo-produto">
+                        <i class="fas fa-plus"></i> Novo Produto
+                    </button>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Cadastrar Produto</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-produto">
+                            <div class="form-group">
+                                <label for="codigo-produto">Código do Produto</label>
+                                <input type="text" id="codigo-produto" name="codigo" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="nome-produto">Nome do Produto</label>
+                                <input type="text" id="nome-produto" name="nome" required>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Salvar Produto
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Importar Produtos via Excel</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="import-section">
+                            <p>Importe múltiplos produtos de uma planilha Excel. A planilha deve conter as colunas "codigo" e "nome" (ou variações como "código", "produto", etc.).</p>
+                            
+                            <div class="form-group">
+                                <label for="arquivo-excel">Selecionar Arquivo Excel</label>
+                                <input type="file" id="arquivo-excel" accept=".xlsx,.xls" class="file-input">
+                            </div>
+                            
+                            <div class="import-buttons">
+                                <button type="button" id="btn-baixar-template" class="btn btn-secondary">
+                                    <i class="fas fa-download"></i> Baixar Template
+                                </button>
+                                <button type="button" id="btn-importar-excel" class="btn btn-primary">
+                                    <i class="fas fa-upload"></i> Importar Produtos
+                                </button>
+                            </div>
+                            
+                            <div id="resultado-importacao" class="import-result" style="display: none;">
+                                <h4>Resultado da Importação:</h4>
+                                <div id="detalhes-importacao"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Produtos Cadastrados</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="tabela-produtos">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Nome</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aba Contagem -->
+            <section id="contagem" class="tab-content">
+                <div class="section-header">
+                    <h2>Contagem de Estoque</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Buscar Produto</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="search-container">
+                            <div class="form-group">
+                                <label for="busca-codigo">Código do Produto</label>
+                                <div class="input-group">
+                                    <input type="text" id="busca-codigo" placeholder="Digite o código do produto">
+                                    <button type="button" id="btn-buscar" class="btn btn-primary">
+                                        <i class="fas fa-search"></i> Buscar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="produto-encontrado" class="produto-info" style="display: none;">
+                            <h4 id="produto-nome"></h4>
+                            <p>Código: <span id="produto-codigo"></span></p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card" id="card-contagem" style="display: none;">
+                    <div class="card-header">
+                        <h3>Registrar Contagem</h3>
+                    </div>
+                    <div class="card-body">
+                        <form id="form-contagem">
+                            <input type="hidden" id="produto-codigo-hidden">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="lote">Lote</label>
+                                    <input type="text" id="lote" name="lote" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="validade-mes">Mês de Validade</label>
+                                    <select id="validade-mes" name="validade_mes" required>
+                                        <option value="">Selecione</option>
+                                        <option value="1">Janeiro</option>
+                                        <option value="2">Fevereiro</option>
+                                        <option value="3">Março</option>
+                                        <option value="4">Abril</option>
+                                        <option value="5">Maio</option>
+                                        <option value="6">Junho</option>
+                                        <option value="7">Julho</option>
+                                        <option value="8">Agosto</option>
+                                        <option value="9">Setembro</option>
+                                        <option value="10">Outubro</option>
+                                        <option value="11">Novembro</option>
+                                        <option value="12">Dezembro</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label for="validade-ano">Ano de Validade</label>
+                                    <input type="number" id="validade-ano" name="validade_ano" min="2024" max="2050" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="quantidade">Quantidade</label>
+                                    <input type="number" id="quantidade" name="quantidade" min="1" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Registrar Contagem
+                            </button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Contagens Registradas</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-container">
+                            <table id="tabela-contagens">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Produto</th>
+                                        <th>Lote</th>
+                                        <th>Validade</th>
+                                        <th>Quantidade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Aba Relatórios -->
+            <section id="relatorios" class="tab-content">
+                <div class="section-header">
+                    <h2>Relatórios</h2>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Gerar Relatórios</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="report-buttons">
+                            <button class="btn btn-danger" id="btn-relatorio-pdf">
+                                <i class="fas fa-file-pdf"></i> Gerar PDF
+                            </button>
+                            <button class="btn btn-success" id="btn-relatorio-excel">
+                                <i class="fas fa-file-excel"></i> Gerar Excel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <h3>Resumo do Estoque</h3>
+                        <button class="btn btn-secondary" id="btn-atualizar-resumo">
+                            <i class="fas fa-sync"></i> Atualizar
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div id="resumo-loading" class="loading" style="display: none;">
+                            <i class="fas fa-spinner fa-spin"></i> Carregando...
+                        </div>
+                        <div class="table-container">
+                            <table id="tabela-resumo">
+                                <thead>
+                                    <tr>
+                                        <th>Código</th>
+                                        <th>Produto</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                                <tfoot>
+                                    <tr class="total-row">
+                                        <td colspan="2"><strong>Total Geral:</strong></td>
+                                        <td id="total-geral"><strong>0</strong></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal para mensagens -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <div id="modal-body"></div>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loading-overlay" class="loading-overlay" style="display: none;">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>Processando...</p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
